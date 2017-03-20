@@ -96,7 +96,7 @@ public class RealmFragment extends Fragment implements RealmChangeListener<Realm
 
     @Override
     public void onChange(RealmResults<Person> results) {
-        Log.v(TAG, "# of record " + results.size());
+        textView.setText("# of record " + results.size());
         for (Person person: results) {
 //            Log.v(TAG, person.toString());
         }

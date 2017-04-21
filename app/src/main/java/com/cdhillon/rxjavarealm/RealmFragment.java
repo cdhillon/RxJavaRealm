@@ -123,6 +123,7 @@ public class RealmFragment extends Fragment implements RealmChangeListener<Realm
     }
 
     private void addRecordSync() {
+        Log.v(TAG, "realm autoRefresh? " + realmUiThread.isAutoRefresh());
         realmUiThread.executeTransaction(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {

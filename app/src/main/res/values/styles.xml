@@ -14,4 +14,9 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+    <style name="MyButton" parent="Widget.AppCompat.Light.ActionButton">
+        <item name="paddingStart">1dp</item>
+        <item name="paddingEnd">1dp</item>
+    </style>
+
 </resources>

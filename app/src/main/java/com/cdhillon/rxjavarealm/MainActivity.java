@@ -1,6 +1,12 @@
 package com.cdhillon.rxjavarealm;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
+import android.content.pm.Signature;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -9,12 +15,21 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.io.ByteArrayInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,8 +72,68 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+
+        getSignatureInfo(getPackageName());
+        getSignatureInfo("com.qualcomm.atfwd");
+        getSignatureInfo("com.qualcomm.timeservice");
+        getSignatureInfo("com.android.systemui");
+        getSignatureInfo("no.nordicsemi.android.mcp");
+        getSignatureInfo("com.spotify.music");
+        getSignatureInfo("com.google.android.dialer");
+        getSignatureInfo("com.att.myWireless");
+
+        getSignatureInfo(getContentProviderPackage(ContactsContract.Profile.CONTENT_URI.getAuthority()));
+        getSignatureInfo(getContentProviderPackage(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI.getAuthority()));
+
     }
 
+    private void getSignatureInfo(String pkgName) {
+        Log.v("CSD", "-----------------------------------------");
+        Log.v("CSD", "package " + pkgName);
+        PackageManager pm = getPackageManager();
+        try {
+            PackageInfo packageInfo = pm.getPackageInfo(pkgName, PackageManager.GET_SIGNATURES);
+            Signature[] signatures = packageInfo.signatures;
+
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+
+            for(int i=0; i < signatures.length; i++) {
+                ByteArrayInputStream stream = new ByteArrayInputStream(signatures[i].toByteArray());
+                X509Certificate cert = (X509Certificate) cf.generateCertificate(stream);
+                PublicKey publicKey = cert.getPublicKey();
+                Log.v("CSD", "public key format " + publicKey.getFormat());
+                Log.v("CSD", "cert issuer " + cert.getIssuerDN().getName());
+
+
+                MessageDigest md;
+                md = MessageDigest.getInstance("MD5");
+                md.update(signatures[i].toByteArray());
+                String hashKey = ConversionUtil.byteArrayToHex(md.digest());
+                Log.v("CSD", "cert hash MD5 " + hashKey);
+
+                md = MessageDigest.getInstance("SHA");
+                md.update(signatures[i].toByteArray());
+                hashKey = ConversionUtil.byteArrayToHex(md.digest());
+                Log.v("CSD", "cert hash SHA " + hashKey);
+            }
+
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    String getContentProviderPackage(String authority) {
+        PackageManager pm = getPackageManager();
+        ProviderInfo providerInfo = pm.resolveContentProvider(authority, PackageManager.MATCH_ALL);
+//        Log.v("CSD", "authority " + providerInfo.authority + " pkgName " + providerInfo.packageName);
+        return providerInfo.packageName;
+    }
 
 
     @Override

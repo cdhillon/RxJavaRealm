@@ -1,10 +1,17 @@
 package com.cdhillon.rxjavarealm;
 
 import android.text.format.DateUtils;
+import android.util.Log;
 
 import org.junit.Test;
+import org.reactivestreams.Subscriber;
 
 import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 
 /**
  * Created by cdhillon on 6/8/17.
@@ -39,5 +46,33 @@ public class DateUtilTest extends RobolectricTest {
                 DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_WEEKDAY).toString());
 
 //        Logger.v(TAG, DateUtils.getRelativeTimeSpanString(threeDaysFuture, now, DateUtils.DAY_IN_MILLIS, DateUtils.FORMAT_SHOW_DATE|DateUtils.FORMAT_SHOW_TIME).toString());
+    }
+
+    @Test
+    public void testRx() {
+
+        Observable<Integer> observable = Observable.just(1);
+        observable.subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.v(TAG, "onSubscribe");
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.v(TAG, "value " + integer);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+                Log.e(TAG, "value" + e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+                Log.v(TAG, "onComplete");
+            }
+        });
     }
 }
